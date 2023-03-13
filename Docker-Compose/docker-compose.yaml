@@ -1,0 +1,23 @@
+services:
+  python-app:
+    build: ../App
+    image: shepl/python_app
+    env_file:
+      - .env
+    networks:
+      - shared
+    depends_on:
+      - redis
+    ports:
+      - "8000:8000"
+
+  redis:
+    image: redis
+    networks:
+      - shared
+    ports:
+      - "6379:6379"
+    volumes: 
+      - ./:/data
+networks:
+  shared:
