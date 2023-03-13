@@ -1,0 +1,156 @@
+USER-SUPPLIED VALUES:
+OpenShift:
+  createSCC: true
+  enabled: false
+affinity: {}
+annotations: {}
+caCerts:
+  enabled: false
+  image: adoptopenjdk/openjdk11:alpine
+  secret: your-secret
+containerSecurityContext:
+  runAsUser: 1000
+deploymentStrategy: {}
+deploymentType: StatefulSet
+edition: community
+elasticsearch:
+  bootstrapChecks: true
+  configureNode: true
+emptyDir: {}
+extraConfig:
+  configmaps: []
+  secrets: []
+extraContainers: []
+extraInitContainers: {}
+hostAliases: []
+image:
+  pullPolicy: IfNotPresent
+  repository: sonarqube
+  tag: 9.9.0-{{ .Values.edition }}
+ingress:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 64m
+  enabled: false
+  hosts:
+  - name: sonarqube.your-org.com
+    path: /
+  tls: []
+initContainers:
+  resources: {}
+initFs:
+  enabled: true
+  securityContext:
+    privileged: true
+initSysctl:
+  enabled: true
+  fsFileMax: 131072
+  nofile: 131072
+  nproc: 8192
+  securityContext:
+    privileged: true
+  vmMaxMapCount: 524288
+jdbcOverwrite:
+  enable: false
+  jdbcPassword: sonarPass
+  jdbcUrl: jdbc:postgresql://myPostgress/myDatabase?socketTimeout=1500
+  jdbcUsername: sonarUser
+jvmCeOpts: ""
+jvmOpts: ""
+livenessProbe:
+  failureThreshold: 6
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  sonarWebContext: /
+monitoringPasscode: define_it
+networkPolicy:
+  enabled: false
+  prometheusNamespace: monitoring
+nginx:
+  enabled: false
+nodeSelector: {}
+persistence:
+  accessMode: ReadWriteOnce
+  annotations: {}
+  enabled: true
+  mounts: []
+  size: 2Gi
+  storageClass: null
+  uid: 1000
+  volumes: []
+plugins:
+  install: []
+  noCheckCertificate: false
+  securityContext:
+    runAsGroup: 1000
+    runAsUser: 1000
+podLabels: {}
+postgresql:
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 1001
+  enabled: true
+  persistence:
+    accessMode: ReadWriteOnce
+    enabled: true
+    size: 2Gi
+    storageClass: null
+  postgresqlDatabase: sonarDB
+  postgresqlPassword: sonarPass
+  postgresqlUsername: sonarUser
+  securityContext:
+    enabled: true
+    fsGroup: 1001
+  service:
+    port: 5432
+  serviceAccount:
+    enabled: false
+  shmVolume:
+    chmod:
+      enabled: false
+  volumePermissions:
+    enabled: false
+    securityContext:
+      runAsUser: 0
+prometheusExporter:
+  enabled: false
+  noCheckCertificate: false
+  version: 0.16.0
+readinessProbe:
+  failureThreshold: 6
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  sonarWebContext: /
+replicaCount: 1
+route:
+  annotations: {}
+  enabled: false
+  host: ""
+  tls:
+    termination: edge
+securityContext:
+  fsGroup: 1000
+service:
+  annotations: {}
+  externalPort: 9000
+  internalPort: 9000
+  labels: null
+  type: ClusterIP
+serviceAccount:
+  annotations: {}
+  create: false
+sonarWebContext: /
+sonarqubeFolder: /opt/sonarqube
+startupProbe:
+  failureThreshold: 24
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  sonarWebContext: /
+terminationGracePeriodSeconds: 60
+tests:
+  enabled: true
+  image: bitnami/minideb-extras
+  initContainers:
+    image: bats/bats:1.2.1
+    resources: {}
+  resources: {}
+tolerations: []
