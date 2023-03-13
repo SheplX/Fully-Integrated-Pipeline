@@ -1,0 +1,40 @@
+- hosts: localhost
+  connection: local
+  become: true
+  vars:
+    helm_charts:
+      # - name: jenkins
+      #   chart_folder: Jenkins/
+      #   values_file: Jenkins/Jenkins.values.yaml
+      # - name: external-secrets
+      #   chart_folder: External-secrets/
+      #   values_file: External-secrets/External-secrets.values.yaml
+      # - name: vault
+      #   chart_folder: Vault/
+      #   values_file: Vault/Vault.values.yaml
+      - name: monitoring
+        chart_folder: Prometheus/
+        values_file: Prometheus/Prometheus.values.yaml
+      # - name: grafana
+      #   chart_folder: Grafana/
+      #   values_file: Grafana/Grafana.values.yaml
+      # - name: sonarqube
+      #   chart_folder: SonarQube/
+      #   values_file: SonarQube/SonarQube.values.yaml
+    # deployment:
+    #   name: nexus
+    #   manifest_file: Nexus/nexus.deployment.yml
+  tasks:
+    - name: Create namespace for Helm charts
+      command: kubectl create namespace {{ item.name }} --kubeconfig=/home/shepl/.kube/config
+      loop: "{{ helm_charts }}"
+      register: namespace
+      ignore_errors: yes
+      failed_when: not item.name in namespace.stderr
+
+    - name: Install Helm charts
+      command: helm install {{ item.name }} {{ item.chart_folder }} --values {{ item.values_file }} -n {{ item.name }} --kubeconfig=/home/shepl/.kube/config
+      loop: "{{ helm_charts }}"
+
+    # - name: Deploying Nexus manifests
+    #   command: kubectl apply -f {{ deployment.manifest_file }} --namespace {{ deployment.name }} --kubeconfig=/home/shepl/.kube/config
