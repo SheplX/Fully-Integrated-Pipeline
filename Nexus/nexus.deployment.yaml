@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-nexus
+spec:
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 5Gi
+  hostPath:
+    path: /data/nexus-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-nexus
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce 
+  volumeName: pv-nexus
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  nexus
+  labels:
+    app:  nexus
+spec:
+  selector:
+    matchLabels:
+      app: nexus
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app:  nexus
+    spec:
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: pvc-nexus
+      initContainers:
+      - name: permission
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        command: ['chown','-R', '200', '/nexus-data']
+        volumeMounts:
+        - name: data
+          mountPath: /nexus-data
+      containers:
+      - name:  nexus
+        image:  sonatype/nexus3:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8081
+        - containerPort: 5000
+        volumeMounts:
+        - name: data
+          mountPath: /nexus-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexus
+spec:
+  selector:
+    app: nexus
+  type: ClusterIP
+  ports:
+  - port: 8081
+    targetPort: 8081
+    protocol: TCP
+    name: nexus
+  - port: 5000
+    targetPort: 5000
+    protocol: TCP
+    name: docker 
