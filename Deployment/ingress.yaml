@@ -1,0 +1,47 @@
+apiVersion: cert-manager.io/v1alpha2
+kind: Issuer
+metadata:
+  name: letsencrypt
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    privateKeySecretRef: 
+      name: letsencrypt
+    solvers:
+    - http01:
+       ingress:
+         class: nginx
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: selfsigned-crt
+spec:
+  secretName: tls-secret
+  issuerRef:
+    name: letsencrypt
+    kind: Issuer
+  commonName: example-app.com
+  dnsNames:
+    - example-app.com
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+
+  annotations:
+   kubernetes.io/ingress.class: nginx
+   nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
+  name: nginx-ingress
+spec:
+  tls:
+    - hosts: example-app.com
+      secretName: tls-secret
+  rules:
+    - host: example-app.com
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: app-svc
+            servicePort: 8000
