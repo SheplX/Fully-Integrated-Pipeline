@@ -1,0 +1,84 @@
+- hosts: localhost
+  connection: local
+  become: yes
+  vars:
+    helm_charts:
+      - name: jenkins
+        chart_folder: Jenkins/
+        values_file: Jenkins/jenkins.values.yaml
+        namespace: jenkins
+      - name: external-secrets
+        chart_folder: External-secrets/
+        values_file: External-secrets/external-secrets.values.yaml
+        namespace: external-secrets
+      - name: vault
+        chart_folder: Vault/
+        values_file: Vault/vault.values.yaml
+        namespace: vault
+      - name: prometheus
+        chart_folder: Prometheus/
+        values_file: Prometheus/prometheus.values.yaml
+        namespace: monitoring
+      - name: grafana
+        chart_folder: Grafana/
+        values_file: Grafana/grafana.values.yaml
+        namespace: monitoring
+      - name: sonarqube
+        chart_folder: SonarQube/
+        values_file: SonarQube/sonarqube.values.yaml
+        namespace: sonarqube
+      - deployment: nexus
+        nexus_manifest: Nexus/nexus.deployment.yaml
+        namespace: nexus
+      - deployment: jenkins_role
+        jenkins_role: Jenkins/role.yaml
+        namespace: jenkins
+
+  tasks:
+    - name: Connect to GKE cluster
+      shell: gcloud container clusters get-credentials gp-cluster --region europe-west1 --project project-340821
+      
+    - name: Create namespace for Helm charts
+      command: kubectl create namespace {{ item.namespace }} --kubeconfig={{ lookup('env', 'HOME') }}/.kube/config
+      loop: "{{ helm_charts }}"
+      register: checker
+      failed_when: "'already exists' not in checker.stderr"
+      ignore_errors: true
+
+    - name: Install Helm charts
+      command: helm install {{ item.name }} {{ item.chart_folder }} --values {{ item.values_file }} -n {{ item.namespace }} --kubeconfig={{ lookup('env', 'HOME') }}/.kube/config
+      loop: "{{ helm_charts }}"
+      register: install
+      when: item.chart_folder is defined
+      failed_when: "'cannot re-use a name that is still in use' not in install.stderr"
+      ignore_errors: true
+
+    - name: Deploying Nexus manifests
+      command: kubectl apply -f {{ item.nexus_manifest }} --namespace {{ item.namespace }} --kubeconfig={{ lookup('env', 'HOME') }}/.kube/config
+      when: item.nexus_manifest is defined
+      loop: "{{ helm_charts }}"
+
+    - name: Deploying Jenkins Roles
+      command: kubectl apply -f {{ item.jenkins_role }} --namespace {{ item.namespace }} --kubeconfig={{ lookup('env', 'HOME') }}/.kube/config
+      when: item.jenkins_role is defined
+      loop: "{{ helm_charts }}"
+
+    - name: Initiate Hashicorp Vault cluster
+      shell: |
+        sleep 15
+        kubectl exec vault-0 -n vault --kubeconfig={{ lookup('env', 'HOME') }}/.kube/config -- vault operator init \
+            -key-shares=1 \
+            -key-threshold=1 \
+            -format=json > cluster-keys.json &&
+        kubectl exec vault-0 -n vault --kubeconfig={{ lookup('env', 'HOME') }}/.kube/config -- vault operator unseal $(jq -r ".unseal_keys_b64[]" cluster-keys.json) &&
+        kubectl exec -ti vault-1 -n vault --kubeconfig={{ lookup('env', 'HOME') }}/.kube/config -- vault operator raft join http://vault-0.vault-internal:8200 &&
+        kubectl exec -ti vault-2 -n vault --kubeconfig={{ lookup('env', 'HOME') }}/.kube/config -- vault operator raft join http://vault-0.vault-internal:8200 &&
+        kubectl exec -ti vault-1 -n vault --kubeconfig={{ lookup('env', 'HOME') }}/.kube/config -- vault operator unseal $(jq -r ".unseal_keys_b64[]" cluster-keys.json) &&
+        kubectl exec -ti vault-2 -n vault --kubeconfig={{ lookup('env', 'HOME') }}/.kube/config -- vault operator unseal $(jq -r ".unseal_keys_b64[]" cluster-keys.json)
+
+    # - name: delete namespaces
+    #   command: kubectl delete namespace {{ item.namespace }} --kubeconfig={{ lookup('env', 'HOME') }}/.kube/config
+    #   loop: "{{ helm_charts }}"
+    #   register: delete
+    #   ignore_errors: yes
+    #   failed_when: '"not found" in delete.stdout'
