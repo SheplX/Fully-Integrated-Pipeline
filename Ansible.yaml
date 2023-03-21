@@ -36,7 +36,7 @@
 
   tasks:
     - name: Connect to GKE cluster
-      shell: gcloud container clusters get-credentials gp-cluster --region europe-west1 --project project-340821
+      shell: gcloud container clusters get-credentials project-340821-cluster --region europe-west1 --project project-340821
       
     - name: Create namespace for Helm charts
       command: kubectl create namespace {{ item.namespace }} --kubeconfig={{ lookup('env', 'HOME') }}/.kube/config
