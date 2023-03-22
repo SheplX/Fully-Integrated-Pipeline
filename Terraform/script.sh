@@ -1,15 +1,15 @@
 #!/bin/bash
 
 #to get latest updated repos
-sudo apt-get update;
+sudo apt-get update
 
 #to install kubectl CLI
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl";
-curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256";
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl;
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
 #to install Ansible
-sudo apt-get install -y ansible;
+sudo apt-get install -y ansible
 
 #to install gcloud 
 sudo apt install -y apt-transport-https ca-certificates gnupg
@@ -18,6 +18,6 @@ curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo tee /usr/share
 sudo apt-get update && sudo apt-get install -y google-cloud-cli
 
 #to install helm 3
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3;
-chmod +x get_helm.sh;
-./get_helm.sh;
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+chmod +x get_helm.sh
+./get_helm.sh
