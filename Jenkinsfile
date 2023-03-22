@@ -1,14 +1,14 @@
 pipeline {
   
     environment {
-        REPO_NAME = "test"
-        ID = 'shepl.dev@gmail.com'
-        NEXUS_URL = 'http://10.103.37.81:5000'
-        DOCKER_IMAGE_NAME = "shepl/python_app"
+        REPO_NAME           = "Fully-Integrated-Pipeline-Project"
+        ID                  = 'shepl.dev@gmail.com'
+        NEXUS_URL           = 'http://10.103.37.81:5000'
+        DOCKER_IMAGE_NAME   = "shepl/python_app"
         DOCKER_REGISTRY_URL = '10.103.37.81:5000'
-        DOCKER_IMAGE_TAG = "${env.BUILD_NUMBER}-prod"
-        BRANCH_NAME = 'main'
-        NAMESPACE = 'app'
+        DOCKER_IMAGE_TAG    = "${env.BUILD_NUMBER}-prod"
+        BRANCH_NAME         = 'main'
+        NAMESPACE           = 'app'
     }
   
     agent {
@@ -17,7 +17,7 @@ pipeline {
           apiVersion: v1
           kind: Pod
           metadata:
-            name: kaniko
+            name: agent
           spec:
             containers:
             - name: kubectl
