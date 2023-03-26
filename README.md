@@ -11,7 +11,7 @@ a complete cycle that can simulate a real environment on companies, a process th
     - `Docker` - for building the application image.
     - `Kubernetes` - for deploying the application & database manifests, and helm charts.
     - `Ansible` - for automating some tasks inside the cluster like creating the namespaces, deploying the helm charts on each namespace and configuring the Hashicorp Vault cluster.
-    - `Helm` - for deploying several required helm charts.
+    - `Helm` - for deploying some required helm charts like Jenkins, Hashicorp Vault, External-secrets, SonarQube, Prometheus, and Grafana, I tried to make my custom values for each Helm package.
     - `Prometheus` - as a data source for Grafana. to scrape the metrics from several configured targets.
     - `Grafana` - for visualization, watch each target metric.
     - `SonarQube` - for automatic code reviews, delivers a clean & safe code.
@@ -64,7 +64,7 @@ ansible-playbook --ask-become-pass Ansible.yaml
 
 - Now we can access the Vault UI and set up our credentials. in this case, I need to set up 2 different types of secrets:
     - the first one is the application credentials necessary for the application to be able to communicate with the Redis database server so the manifest type of the secret will be `Opaque`.
-    - the second one is the container credentials. because we have a private nexus repository and we want the application container being able to authenticate with the repo. we must set up a credentials type `kubernetes.io/dockerconfigjson` with the repo link, user, and password.
+    - the second one is the container credentials. because we have a private nexus registry and we want the application container to be able to authenticate with the repo. we must set up a credentials type `kubernetes.io/dockerconfigjson` with the repo link, user, and password.
 
 ![Secrets](./Screenshots/Secrets.png)
 
@@ -81,4 +81,33 @@ ansible-playbook --ask-become-pass Ansible.yaml
 
 ![External-secrets](./Screenshots/External-secrets.png)
 
-# 
+# Setting up Nexus registry
+
+- The second important thing is to set up the registry which will be used to store our application images which will be built by Jenkins, in this case, I tried to use Nexus to simulate security reasons related to the companies like they sometimes would prefer to store the images locally. Although you can create your private registries online with Docker hub or Github container registry it's still a better & preferred idea for most companies.
+- I tried to use Nexus helm charts from the official repo but I found some permission issues so I tried to create a deployment for the Nexus registry.
+- I set up 2 Containers
+    - Initial container with a busybox image for setting the appropriate ownership and permissions on the `/nexus-data` directory before the Nexus container starts running. it will change the ownership of the `/nexus-data` directory to the user with ID 200, which matches the UID of the non-root user that the Nexus container will run as. This ensures that the Nexus container will have the necessary permissions to read and write data in the `/nexus-data` directory ( this was a problem with the Nexus helm charts that's why I made a special deployment for it).
+    - Nexus contianer has the official Nexus image with 2 ports opened. the first is 8081 and it is the important port to be able to access the Nexus UI. 5000 which will be used to push the images by it.
+- Also to make sure that we have enough storage for storing our images inside Nexus, I created a Persist volume claim attached with Persist volume with enough space to test the pipeline.
+- Now the Nexus registry is up and ready to push/pull images to it.
+
+![Nexus](./Screenshots/)
+
+# Setting up Jenkins
+
+- As the most popular CI/CD tool today, I loved to use Jenkins to manage the pipeline of the project. especially because Jenkins can use several useful plugins which can be helpful to automate some jobs. 
+- I used Jenkins Helm charts because I always like to customize Jenkins with my personal configurations, here is how my custom values file has been set :
+    - Setting Jenkins with some plugins to be preinstalled like :
+        - `Kubernetes` - because I like to use different agents to perform Jenkins jobs.
+        - `Configuration as code` - useful plugin to set up Jenkins configurations like global configurations, global system configuration or even any other installed plugins. I used it to set up Slack configurations, SonarQube plugin,  Prometheus plugin, some unwanted security warnings, and some credentials.
+        - `Prometheus` - I need Jenkins metrics to be pushed at a special path pattern, by installing this plugin I can find the Jenkins metrics at the path `/Prometheus`. this way I can set up Jenkins as a target for the Prometheus server to be able to scrape its metrics also every 5 secs the metrics will be pushed to the path.
+        -  `Disk usage` - in some cases this plugin must be available if we use Prometheus plugin, this will provide all the disk usage by Jenkins.
+        - `Blue ocean` - a great customized UI for Jenkins, a good sight for the jobs, and check the logs better and more tidily.
+        - `Sonar` - iam using sonarQube on this project so Jenkins must integrate & authenticate with the sonar server to perform a security scan automatically with every build.
+        - `Sonar Quality gates` - after the sonarQube scan has been done, it will end with success or failure, using this plugin with webhook configured will help me to continue the pipeline process or to end it with failure. important because maybe the code has a higher percentage of security issues or the code is not clean enough and SonarQube marked this code as not accepted for building in this case it will be better to stop the pipeline and recheck the code.
+        - `Docker pipeline` - a better way to build the docker images inside Jenkins.
+        - `Slack` - i would like to receive a notifications when there is a build started or for each stage failed or successful and at the end of the pipeline if the build is totally successful or failed, in this case, slack must be the best option available.
+
+
+during this project, Jenkins will integrate with several tools. let's talk about each step.
+    - One of the 
