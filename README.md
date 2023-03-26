@@ -41,7 +41,7 @@ a complete cycle that can simulate a real environment on companies, a process th
 
 - After the resources have been deployed by Terraform, it would be necessary to configure the cluster using Ansible, for that I need first to ssh into the management instance to be able to communicate with the cluster.
 ```
-gcloud compute ssh project-340821-managment-vm --project project-340821 --zone europe-west1 --tunnel-through-iap
+gcloud compute ssh project-340821-management-vm --project project-340821 --zone europe-west1 --tunnel-through-iap
 ```
 - Now i can implement the Ansible playbook.
 ```
@@ -53,3 +53,30 @@ ansible-playbook --ask-become-pass Ansible.yaml
     - Deploy the helm charts of `Jenkins` `Vault` `External-Secrets` `Prometheus` `Grafana` `SonarQube` and the `Nexus` deployments.
     - Deploy the Jenkins roles into its namespace.
     - Initiate the hashicorp Vault cluster.
+
+# Setting up secrets with Hashicorp Vault
+
+- After the deployment of the helm charts had been completed, we must set up the secrets inside the cluster in the first step to make sure that all the required secrets are available. to perform that we need to check if the Hashicorp Vault cluster is up and ready state is 1/1.
+
+![Image](vault.png)
+
+- Now we can access the Vault UI and set up our credentials. in this case, I need to set up 2 different types of secrets:
+    - the first one is the application credentials necessary for the application to be able to communicate with the Redis database server so the manifest type of the secret will be `Opaque`.
+    - the second one is the container credentials. because we have a private nexus repository and we want the application container being able to authenticate with the repo. we must set up a credentials type `kubernetes.io/dockerconfigjson` with the repo link, user, and password.
+
+![Image](vault_credentials.png)
+
+# Setting up External Secrets Operator with Hashicorp Vault
+
+- External secret operator (ESO) is a Kubernetes Operator which can integrate with an external secrets manager like Vault or AWS secret manager or Google Secrets Manager, I found it a great idea if I made integrate with Vault so its free & great solution for handling the secrets inside the cluster.
+    - First, we need to set up a SecretStore with Vault so it can pull any secrets being requested from it. 
+    - A secret with the vault token so it can be able to access the vault and pull the secrets from it.
+    - There are 2 types of SecretStores :
+        - `SecretStore` - it can only handle the secrets inside a specific namespace.
+        - `ClusterSecretStore` - it can handle the secrets across all the namespaces inside the cluster.
+    - I choose the second type because I would like to handle all the namespaces secrets at once with one SecretStore so it will be a more convenient way.
+- After setting up the SecretStore with Vault it must be able to connect with Vault and pull the requested secrets then create each one on the app namespace once we deploy the application.
+
+![Image](external-secrets.png)
+
+# 
