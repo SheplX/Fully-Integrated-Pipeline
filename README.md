@@ -2,7 +2,7 @@
 Introducing a pipeline project integrating with several popular DevOps tools. I tried to make everything as automated, secure, reliable, and logical as possible.
 a complete cycle that can simulate a real environment on companies, a process that can produce good & secure software quality with good sights for each resource inside the infrastructure.
 
-![Image](https://github.com/SheplX/test/blob/main/diagrams/fully%20integrated%20project/final%20project.drawio.png)
+![Project](./Screenshots/Project.png)
 
 # Getting started
 
@@ -47,6 +47,8 @@ gcloud compute ssh project-340821-management-vm --project project-340821 --zone 
 ```
 ansible-playbook --ask-become-pass Ansible.yaml
 ```
+![Ansible](./Screenshots/)
+
 - This Ansible playbook will perform several tasks :
     - Connect to the GKE cluster.
     - Create several namespaces, each namespace will contain different deployments/helm charts.
@@ -58,13 +60,13 @@ ansible-playbook --ask-become-pass Ansible.yaml
 
 - After the deployment of the helm charts had been completed, we must set up the secrets inside the cluster in the first step to make sure that all the required secrets are available. to perform that we need to check if the Hashicorp Vault cluster is up and ready state is 1/1.
 
-![Image](vault.png)
+![Vault](./Screenshots/Vault.png)
 
 - Now we can access the Vault UI and set up our credentials. in this case, I need to set up 2 different types of secrets:
     - the first one is the application credentials necessary for the application to be able to communicate with the Redis database server so the manifest type of the secret will be `Opaque`.
     - the second one is the container credentials. because we have a private nexus repository and we want the application container being able to authenticate with the repo. we must set up a credentials type `kubernetes.io/dockerconfigjson` with the repo link, user, and password.
 
-![Image](vault_credentials.png)
+![Secrets](./Screenshots/Secrets.png)
 
 # Setting up External Secrets Operator with Hashicorp Vault
 
@@ -77,6 +79,6 @@ ansible-playbook --ask-become-pass Ansible.yaml
     - I choose the second type because I would like to handle all the namespaces secrets at once with one SecretStore so it will be a more convenient way.
 - After setting up the SecretStore with Vault it must be able to connect with Vault and pull the requested secrets then create each one on the app namespace once we deploy the application.
 
-![Image](external-secrets.png)
+![External-secrets](./Screenshots/External-secrets.png)
 
 # 
