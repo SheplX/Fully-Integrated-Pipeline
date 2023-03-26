@@ -2,7 +2,7 @@
 Introducing a pipeline project integrating with several popular DevOps tools. I tried to make everything as automated, secure, reliable, and logical as possible.
 a complete cycle that can simulate a real environment on companies, a process that can produce good & secure software quality with good sights for each resource inside the infrastructure.
 
-![Image](https://github.com/SheplX/CI-CD-Final-ITI-PROJECT/blob/main/ScreenShots/Simple%20DevOps%20Project%20-%20CI_CD%20with%20Git%2C%20Jenkins%2C%20Ansible%2C%20Docker%20and%20Kubernetes%20_%20Simpliv.png)
+![Image](https://github.com/SheplX/test/blob/main/diagrams/fully%20integrated%20project/final%20project.drawio.png)
 
 # Getting started
 
