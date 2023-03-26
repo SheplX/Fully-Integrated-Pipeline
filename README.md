@@ -2,7 +2,7 @@
 Introducing a pipeline project integrating with several popular DevOps tools. I tried to make everything as automated, secure, reliable, and logical as possible.
 a complete cycle that can simulate a real environment on companies, a process that can produce good & secure software quality with good sights for each resource inside the infrastructure.
 
-![Image](https://github.com/SheplX/test/blob/main/diagrams/fully%20integrated%20project/final%20project.drawio.png)
+![Image](https://github.com/SheplX/test/blob/main/diagrams/fully%20integrated%20project/final%20project.drawio.svg)
 
 # Getting started
 
@@ -30,7 +30,7 @@ a complete cycle that can simulate a real environment on companies, a process th
 - Building a VPC with 2 subnets, each subnet will have different sources.
 - The first subnet will be Management (Public) with these resources :
     - An instance that will be used to access the cluster control plane privately.
-    - Ahis instance will be configured with a script to have preinstalled tools like ansible, kubectl, gcloud-cli, and helm.
+    - This instance will be configured with a script to have preinstalled tools like ansible, kubectl, gcloud-cli, and helm.
 - The second subnet will be restricted (Private) and associated with a router, and nat gateway so the resources can access the internet without external IP. this subnet will have these resources :
     - A private GKE cluster is configured with a private control plane to be accessed only from a CIDR range, this range will be the Management subnet range so the instance only can access the cluster control plane.
 - A service account is bound with a role to be able to create the cluster and also for the instance to be able to manage the cluster.
@@ -50,6 +50,6 @@ ansible-playbook --ask-become-pass Ansible.yaml
 - This Ansible playbook will perform several tasks :
     - Connect to the GKE cluster.
     - Create several namespaces, each namespace will contain different deployments/helm charts.
-    - Deploy the helm charts of `Jenkins` `Hashicorp Vault` `External-Secrets` `Prometheus` `Grafana` `SonarQube`. and the `Nexus` deployments.
+    - Deploy the helm charts of `Jenkins` `Vault` `External-Secrets` `Prometheus` `Grafana` `SonarQube` and the `Nexus` deployments.
     - Deploy the Jenkins roles into its namespace.
-    - Initiate the hashcorp Vault cluster.
+    - Initiate the hashicorp Vault cluster.
