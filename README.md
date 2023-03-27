@@ -150,3 +150,5 @@ ansible-playbook --ask-become-pass Ansible.yaml
     ![Jenkins_stage_4-2](./Screenshots/Jenkins_stage_4-2.png)
     - `Stage 5` - Push the new tag to Git, once a new build is out, we must edit the Application deployment with the new image tag.
     ![Jenkins_stage_5](./Screenshots/Jenkins_stage_5.png)
+    - `Stage 6` - Deploy the application manifests to the cluster. by the appropriate roles configured to the service account attached to Jenkins, it can deploy, check, and create any group of resources we want. in my case, I tried to create roles for Jenkins to be able to deploy CRDs not authorized to jenkins by default like external secrets, vault, ingress, pv, pvc. sure these things must be set for the first time to the application by Cluster admin, not by Jenkins but I just wanted to provide the Jenkins service account power to do that also I loved to try how can I create a custom unique group of roles and if that can be accepted by Jenkins or not. however, it's a great thing if you have control over your cluster resources.  
+    ![Jenkins_stage_6](./Screenshots/Jenkins_stage_6.png)
