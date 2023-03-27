@@ -111,6 +111,24 @@ ansible-playbook --ask-become-pass Ansible.yaml
 
 ![Sonar_quality_gates](./Screenshots/Sonar_quality_gates.png)
 
+# Setting up SonarQube
+
+- SonarQube is one of the most important tools that must be available if you like to have a clean & safe code or need more wise checks for your code described with great reports.
+- Sonar is available to perform a security scan for code if you have your code inside a folder or a remote repository, if Windows or Linux. Sonar is also available for Jenkins to integrate with the pipeline and this is an awesome feature.
+- In my case, I used Sonar to scan my Python code through the Jenkins pipeline, also I can see some checks for my Dockerfile.
+- Quality gates checker condition according to the scan results if successful or failed to make sure that build releases are secured.
+- We must set up some configurations for SonarQube to be able to communicate with Jenkins:
+    - Set up properties file which has a new project, with a name to be configured with the application code by the properties file. this will tell the scanner where to push the analytics of the scanned code.
+    - Qualitly gates must be configured with a webhook between sonar and Jenkins to be able to approve or deny according to the build results so Jenkins can continue the pipeline or stop it.
+    - A sonar token is required to authenticate with Jenkins for scanning or quality gate cases.
+- Once Jenkins performs the scanning job, sonar will receive the scanning reports and analyze it.
+
+![Sonar_results](./Screenshots/Sonar_results.png)
+
+- And becase the build is passed successfully, the quality gates step must reply to Jenkins with a success statue to continue the pipeline steps.
+
+![Sonar_quality_gates](./Screenshots/Sonar_quality_gates.png)
+
 # Setting up Jenkins
 
 - As the most popular CI/CD tool today, I loved to use Jenkins to manage the pipeline of the project. especially because Jenkins can use several useful plugins which can be helpful to automate some jobs. 
