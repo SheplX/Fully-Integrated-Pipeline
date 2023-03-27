@@ -100,7 +100,7 @@ ansible-playbook --ask-become-pass Ansible.yaml
 - In my case, I used Sonar to scan my Python code through the Jenkins pipeline, also I can see some checks for my Dockerfile.
 - Quality gates checker condition according to the scan results if successful or failed to make sure that build releases are secured.
 - We must set up some configurations for SonarQube to be able to communicate with Jenkins:
-    - Set up properties file which has a new project, with a name to be configured with the application code by the properties file. this will tell the scanner where to push the analytics of the scanned code.
+    - Set up a new project, with a name to be configured with the application code by the properties file. this will tell the scanner which project to push the analytics of the scanned code.
     - Qualitly gates must be configured with a webhook between sonar and Jenkins to be able to approve or deny according to the build results so Jenkins can continue the pipeline or stop it.
     - A sonar token is required to authenticate with Jenkins for scanning or quality gate cases.
 - Once Jenkins performs the scanning job, sonar will receive the scanning reports and analyze it.
@@ -124,10 +124,29 @@ ansible-playbook --ask-become-pass Ansible.yaml
         - `Sonar` - iam using SonarQube on this project so Jenkins must integrate & authenticate with the sonar server to perform a security scan automatically with every build.
         - `Sonar-Quality-gates` - after the SonarQube scan has been done, it will end with success or failure, using this plugin with webhook configured will help me to continue the pipeline process or to end it with failure. important because maybe the code has a higher percentage of security issues or the code is not clean enough and SonarQube marked this code as not accepted for building in this case it will be better to stop the pipeline and recheck the code.
         - `Docker-pipeline` - a better way to build the docker images inside Jenkins.
-        - `Slack` - i would like to receive notifications when there is a build started or for each stage failed or successful and at the end of the pipeline if the build is totally successful or failed, in this case, slack must be the best option available.
+        - `Slack` - I would like to receive notifications when there is a build started or for each stage failed or successful and at the end of the pipeline if the build is totally successful or failed, in this case, slack must be the best option available.
     - Set up a specific User and Password if inside the values or from a separate token.
     - Jenkins custom image, service type.
     - Persistent volume, persistent volume claim.
     - Jenkins agent configurations, capacity, and image.
     - Jenkins service account with the appropriate roles for deploying inside the cluster.
-- Once set up is up and ready
+- Once Jenkins is up and running with the above configurations we will need to create some required tokens for the pipeline like authentication with Slack, Nexus registry, Git repository, and SonarQube scanner.
+- A webhook between the Repository and Jenkins server so once any new commits have been added to the repository, GitHub will tell Jenkins about it so Jenkins can start the pipeline automatically.
+- Now we can start the pipeline.
+
+![Jenkins_stages](./Screenshots/Jenkins_stages.png)
+
+- The pipeline consists of 6 stages, a post-action for each stage to tell Slack if this stage is passed or failed. I tried to be very precise with each stage for making troubleshooting easier if a stage failed, by this way we can watch everything just from Slack. and finally, a post-action that tells if the build success or failed and the time used during the pipeline process.
+    - `Stage 1` - just to send a notification to Slack to tell that there is a new build started with a description of the job like the job name, number, description, and a button that lets u directly open the job page if you want to check it.
+    ![Jenkins_stage_1](./Screenshots/Jenkins_stage_1.png)
+    - `Stage 2` - Code analysis with SonarQube, Jenkins will authenticate with Sonar and start the scan process.
+    ![Jenkins_stage_2-1](./Screenshots/Jenkins_stage_2-1.png)
+    ![Jenkins_stage_2-2](./Screenshots/Jenkins_stage_2-2.png)
+    ![Jenkins_stage_2-3](./Screenshots/Jenkins_stage_2-3.png)
+    - `Stage 3` - Quality gates status, after the code analysis process is done, Jenkins must wait for the Quality gates to reply if the build is passed then Jenkins will continue the pipeline, if not passed then Jenkins will Stop the pipeline.
+    ![Jenkins_stage_3](./Screenshots/Jenkins_stage_3.png)
+    - `Stage 4` - Building and pushing the image to the Nexus repository after the quality gate marked the code as passed.
+    ![Jenkins_stage_4-1](./Screenshots/Jenkins_stage_4-1.png)
+    ![Jenkins_stage_4-2](./Screenshots/Jenkins_stage_4-2.png)
+    - `Stage 5` - Push the new tag to Git, once a new build is out, we must edit the Application deployment with the new image tag.
+    ![Jenkins_stage_5](./Screenshots/Jenkins_stage_5.png)
