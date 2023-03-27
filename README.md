@@ -118,7 +118,7 @@ ansible-playbook --ask-become-pass Ansible.yaml
 - In my case, I used Sonar to scan my Python code through the Jenkins pipeline, also I can see some checks for my Dockerfile.
 - Quality gates checker condition according to the scan results if successful or failed to make sure that build releases are secured.
 - We must set up some configurations for SonarQube to be able to communicate with Jenkins:
-    - Set up properties file which has a new project, with a name to be configured with the application code by the properties file. this will tell the scanner where to push the analytics of the scanned code.
+    - Set up a new project, with a name to be configured with the application code by the properties file. this will tell the scanner which project to push the analytics of the scanned code.
     - Qualitly gates must be configured with a webhook between sonar and Jenkins to be able to approve or deny according to the build results so Jenkins can continue the pipeline or stop it.
     - A sonar token is required to authenticate with Jenkins for scanning or quality gate cases.
 - Once Jenkins performs the scanning job, sonar will receive the scanning reports and analyze it.
