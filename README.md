@@ -119,7 +119,9 @@ ansible-playbook --ask-become-pass Ansible.yaml
         - `Kubernetes` - because I like to use different agents to perform Jenkins jobs.
         - `Configuration-as-code` - useful plugin to set up Jenkins configurations like global configurations, global system configuration or even any other installed plugins. I used it to set up Slack configurations, SonarQube plugin, Prometheus plugin, some unwanted security warnings, and some credentials.
         - `Prometheus` - I need Jenkins metrics to be pushed at a special path pattern, by installing this plugin I can find the Jenkins metrics at the path `/Prometheus`. this way I can set up Jenkins as a target for the Prometheus server to be able to scrape its metrics also every 5 secs the metrics will be pushed to the path.
+        ![Jenkins_metrics](./Screenshots/Jenkins_metrics.png)
         -  `Disk-usage` - in some cases this plugin must be available if we use Prometheus plugin, this will provide all the disk usage by Jenkins.
+        ![Jenkins_disk_usage](./Screenshots/Jenkins_disk_usage.png)
         - `Blue-ocean` - a great customized UI for Jenkins, a good sight for the jobs, and check the logs better and more tidily.
         - `Sonar` - iam using SonarQube on this project so Jenkins must integrate & authenticate with the sonar server to perform a security scan automatically with every build.
         - `Sonar-Quality-gates` - after the SonarQube scan has been done, it will end with success or failure, using this plugin with webhook configured will help me to continue the pipeline process or to end it with failure. important because maybe the code has a higher percentage of security issues or the code is not clean enough and SonarQube marked this code as not accepted for building in this case it will be better to stop the pipeline and recheck the code.
@@ -136,19 +138,97 @@ ansible-playbook --ask-become-pass Ansible.yaml
 
 ![Jenkins_stages](./Screenshots/Jenkins_stages.png)
 
-- The pipeline consists of 6 stages, a post-action for each stage to tell Slack if this stage is passed or failed. I tried to be very precise with each stage for making troubleshooting easier if a stage failed, by this way we can watch everything just from Slack. and finally, a post-action that tells if the build success or failed and the time used during the pipeline process.
+- The pipeline is configured with 2 agents:
+    - `Kubectl` - To be able to deploy inside my cluster, it will be a good idea to use a container to handle this thing. I see it as a good solution if you can't connect with your cluster by Jenkins.
+    - `Docker` - For building & push the application image, we will need a Docker-cli connected with the docker demon. I tried to build the image from scratch to make sure that I use a lightweight agent.  
+
+- The stages consist of 6 stages, with a post-action for each stage to tell Slack if this stage is passed or failed. I tried to be very precise with each stage for making troubleshooting easier if a stage failed, by this way we can watch everything just from Slack. and finally, a post-action that tells if the build success or failed and the time used during the pipeline process.
+
     - `Stage 1` - just to send a notification to Slack to tell that there is a new build started with a description of the job like the job name, number, description, and a button that lets u directly open the job page if you want to check it.
+    
     ![Jenkins_stage_1](./Screenshots/Jenkins_stage_1.png)
+
     - `Stage 2` - Code analysis with SonarQube, Jenkins will authenticate with Sonar and start the scan process.
+
     ![Jenkins_stage_2-1](./Screenshots/Jenkins_stage_2-1.png)
     ![Jenkins_stage_2-2](./Screenshots/Jenkins_stage_2-2.png)
     ![Jenkins_stage_2-3](./Screenshots/Jenkins_stage_2-3.png)
+
     - `Stage 3` - Quality gates status, after the code analysis process is done, Jenkins must wait for the Quality gates to reply if the build is passed then Jenkins will continue the pipeline, if not passed then Jenkins will Stop the pipeline.
+
     ![Jenkins_stage_3](./Screenshots/Jenkins_stage_3.png)
+
     - `Stage 4` - Building and pushing the image to the Nexus repository after the quality gate marked the code as passed.
+    
     ![Jenkins_stage_4-1](./Screenshots/Jenkins_stage_4-1.png)
     ![Jenkins_stage_4-2](./Screenshots/Jenkins_stage_4-2.png)
+
     - `Stage 5` - Push the new tag to Git, once a new build is out, we must edit the Application deployment with the new image tag.
+
     ![Jenkins_stage_5](./Screenshots/Jenkins_stage_5.png)
-    - `Stage 6` - Deploy the application manifests to the cluster. by the appropriate roles configured to the service account attached to Jenkins, it can deploy, check, and create any group of resources we want. in my case, I tried to create roles for Jenkins to be able to deploy CRDs not authorized to jenkins by default like external secrets, vault, ingress, pv, pvc. sure these things must be set for the first time to the application by Cluster admin, not by Jenkins but I just wanted to provide the Jenkins service account power to do that also I loved to try how can I create a custom unique group of roles and if that can be accepted by Jenkins or not. however, it's a great thing if you have control over your cluster resources.  
+
+    - `Stage 6` - Deploy the application manifests to the cluster. by the appropriate roles configured to the service account attached to Jenkins, it can deploy, check, and create any group of resources we want. in my case, I tried to create roles for Jenkins to be able to deploy custom CRDs not authorized to Jenkins by default like external secrets, vault, ingress, pv, pvc. sure these things must be set for the first time to the application by Cluster admin, not by Jenkins but I just wanted to provide the Jenkins service account power to do that also I loved to try how can I create a custom unique group of roles and if that can be accepted by Jenkins or not. however, it's a great thing if you have control over your cluster resources. 
+
     ![Jenkins_stage_6](./Screenshots/Jenkins_stage_6.png)
+    
+- After all the pipeline stages are finished, a post-action will send a msg to Slack with build success or failure. here are the full results from slack.
+
+![Jenkins_slack](./Screenshots/Jenkins_slack.png)
+
+# Setting up Prometheus & Grafana
+
+- For several cases, it's very important to watch what's happening to your cluster or your application or even some targets you want to check its metrics. to achieve this, tools such as Prometheus and Grafana provide enormous help for good care of your resources.
+Because several configurations must be done for both Prometheus and Grafana, it would be a nice idea to use helm packages for each tool configured with custom values. here are my custom configurations.
+    - Setting up Jenkins job for pulling metrics by Prometheus. Jenkins with Prometheus plugin can push its metrics to prometheus. this can be achieved by setting jenkins target & path so Prometheus can reach Jenkins correctly.
+    - Setting up alert manager with some rules. this is an awesome feature if you want to set some alerts to specific targets with some conditions. in my case, I set an alert to check all the instances inside my cluster if any instance is down for 1m send a message describing the down target and some information about it also if this instance is back and up send back a message to inform me. an additional thing for letting Prometheus reach the alert manager to send these alerts once any condition is achieved. I had to configure Prometheus with the alert manager endpoint.
+    - Setting up Slack notifications with Prometheus. to receive the above alerts, I set the alert manager to check these alerts. but if the cluster node is down, this not going to work. so I set up Prometheus with a slack webhook to be able to receive the alerts outside the cluster. the slack configuration will read the alert rules and send a notification whenever the condition is vailed for some instance.
+    - Setting up custom user and password for both Prometheus and grafana.
+- Now Prometheus and Grafana must be ready.
+
+![Prometheus-grafana-deployment](./Screenshots/Prometheus-grafana-deployment.png)
+
+- After both charts are up and ready if we take a look at Prometheus UI, we can see that Jenkins metrics are available and we can create some dashboards to it using grafana. sure there are more metrics are configured by default on Prometheus charts for the cluster, nodes, deployments, pods, services, and much more.
+
+![Prometheus_jenkins_metrics](./Screenshots/Prometheus_jenkins_metrics.png)
+
+- We can see our configured rules are available too.
+
+![Prometheus_rules](./Screenshots/Prometheus_rules.png)
+
+- Prometheus targets which will be monitored by the rules and conditions, as you see all instances are up. we can see Jenkins's job between them too.
+
+![Prometheus_targets](./Screenshots/Prometheus_targets.png)
+
+- Let's test if the alert conditions are working or not, for example, I will try to scale down Jenkins pods to 0 to check what will happen, after 1 m I found that Jenkins target is down and the alert is working as expected.
+
+![Prometheus_jenkins_target](./Screenshots/Prometheus_jenkins_target.png)
+![Promethes_jenkins_alert](./Screenshots/Promethes_jenkins_alert.png)
+
+- If we take alook from the Alert manager UI, we will see a notification about the Jenkins instance too.
+
+![Alert-manager](./Screenshots/Alert-manager.png)
+
+- From slack
+
+![Slack_jenkins_down](./Screenshots/Slack_jenkins_down.png)
+
+- Let's set Jenkins back by scaling up Jenkins pod again.
+
+![Slack_jenkins_up](./Screenshots/Slack_jenkins_up.png)
+
+- After making sure that Prometheus is running ok, we can use Grafana by setting up Prometheus as Datasource. we just need to add the Prometheus endpoint to Grafana and test the connection.
+
+![Grafana_datasource](./Screenshots/Grafana_datasource.png)
+
+- In order to check Jenkins metrics, we need to add some dashboards which been configured with Jenkins metrics
+
+![Grafana_jenkins_metrics](./Screenshots/Grafana_jenkins_metrics.png)
+
+- I also want to add some dashboards for the cluster.
+
+![Grafana_cluster_metrics](./Screenshots/Grafana_cluster_metrics.png)
+
+- Let's try to create custom dashboards, for example, I want to check pod metrics for my python application if it's up and running or not. I will select pod metrics that have a ready status and create a new query. we will find the pod is up and running.
+
+![Grafana_application_pod](./Screenshots/Grafana_application_pod.png)
+![Grafana_application_pod-2](./Screenshots/Grafana_application_pod-2.png)
