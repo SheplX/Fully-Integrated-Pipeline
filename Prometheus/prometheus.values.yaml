@@ -92,7 +92,7 @@ alertmanager:
     loadBalancerIP: ""
     loadBalancerSourceRanges: []
     port: 9093
-    type: ClusterIP
+    type: LoadBalancer
   serviceAccount:
     annotations: {}
     create: true
@@ -248,7 +248,7 @@ server:
     statefulsetReplica:
       enabled: false
       replica: 0
-    type: ClusterIP
+    type: LoadBalancer
   sidecarContainers: {}
   sidecarTemplateValues: {}
   slack_api_url: <secret>
