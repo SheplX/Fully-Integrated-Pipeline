@@ -21,13 +21,13 @@ pipeline {
           spec:
             containers:
             - name: kubectl
-              image: shepl/deployment-kit
+              image: shepl/deployment-kit:alpine
               imagePullPolicy: IfNotPresent
               command:
               - /bin/cat
               tty: true
             - name: docker
-              image: shepl/docker.aws:alpine
+              image: shepl/docker-cli:python-alpine
               imagePullPolicy: IfNotPresent
               command: ["sleep", "infinity"]
               volumeMounts:
@@ -109,9 +109,9 @@ pipeline {
         stage('Testing The Application') {
             steps {
                 container('docker') {
-                    dir('App/tests/') {
+                    dir('App/') {
                         script {
-                            sh 'python3 test.py'
+                            sh 'python3 -m unittest discover tests'
                         }
                     }
                 }
