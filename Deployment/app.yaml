@@ -71,7 +71,7 @@ kind: Service
 metadata:
   name: app-svc
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
   - port: 8000
     targetPort: 8000

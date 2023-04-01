@@ -21,9 +21,9 @@ spec:
   issuerRef:
     name: letsencrypt
     kind: Issuer
-  commonName: example-app.com
+  commonName: python-app.devops.com
   dnsNames:
-    - example-app.com
+    - python-app.devops.com
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -35,10 +35,10 @@ metadata:
   name: nginx-ingress
 spec:
   tls:
-    - hosts: example-app.com
+    - hosts: python-app.devops.com
       secretName: tls-secret
   rules:
-    - host: example-app.com
+    - host: python-app.devops.com
       http:
         paths:
         - path: /
