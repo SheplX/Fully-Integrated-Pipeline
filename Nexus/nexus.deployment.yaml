@@ -69,7 +69,7 @@ metadata:
 spec:
   selector:
     app: nexus
-  type: ClusterIP
+  type: LoadBalancer
   ports:
   - port: 8081
     targetPort: 8081
