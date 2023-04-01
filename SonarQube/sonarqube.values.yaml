@@ -134,7 +134,7 @@ service:
   externalPort: 9000
   internalPort: 9000
   labels: null
-  type: ClusterIP
+  type: LoadBalancer
 serviceAccount:
   annotations: {}
   create: false
