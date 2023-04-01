@@ -3,8 +3,8 @@ admin:
   existingSecret: ""
   passwordKey: admin-password
   userKey: admin-user
-adminPassword: admin
-adminUser: admin
+adminPassword: shepl
+adminUser: shepl
 affinity: {}
 alerting: {}
 autoscaling:
@@ -217,7 +217,7 @@ service:
   port: 80
   portName: service
   targetPort: 3000
-  type: ClusterIP
+  type: LoadBalancer
 serviceAccount:
   autoMount: true
   create: true
