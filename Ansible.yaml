@@ -65,7 +65,7 @@
 
     - name: Initiate Hashicorp Vault cluster
       shell: |
-        sleep 15
+        sleep 60
         kubectl exec vault-0 -n vault --kubeconfig={{ lookup('env', 'HOME') }}/.kube/config -- vault operator init \
             -key-shares=1 \
             -key-threshold=1 \
@@ -76,7 +76,7 @@
         kubectl exec -ti vault-1 -n vault --kubeconfig={{ lookup('env', 'HOME') }}/.kube/config -- vault operator unseal $(jq -r ".unseal_keys_b64[]" cluster-keys.json) &&
         kubectl exec -ti vault-2 -n vault --kubeconfig={{ lookup('env', 'HOME') }}/.kube/config -- vault operator unseal $(jq -r ".unseal_keys_b64[]" cluster-keys.json)
 
-    # - name: delete namespaces
+    # - name: Delete namespaces
     #   command: kubectl delete namespace {{ item.namespace }} --kubeconfig={{ lookup('env', 'HOME') }}/.kube/config
     #   loop: "{{ helm_charts }}"
     #   register: delete
