@@ -40,7 +40,7 @@ global:
 injector:
   # True if you want to enable vault agent injection.
   # @default: global.enabled
-  enabled: "-"
+  enabled: true
 
   replicas: 1
 
@@ -501,10 +501,13 @@ server:
 
   # extraEnvironmentVars is a list of extra environment variables to set with the stateful set. These could be
   # used to include variables required for auto-unseal.
-  extraEnvironmentVars: {}
+  extraEnvironmentVars:
     # GOOGLE_REGION: global
     # GOOGLE_PROJECT: myproject
     # GOOGLE_APPLICATION_CREDENTIALS: /vault/userconfig/myproject/myproject-creds.json
+    VAULT_STORAGE_TYPE: consul
+    VAULT_STORAGE_CONSUL_ADDRESS: "consul-server.consul:8500"
+
 
   # extraSecretEnvironmentVars is a list of extra environment variables to set with the stateful set.
   # These variables take value from existing Secret objects.
