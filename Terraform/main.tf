@@ -39,7 +39,7 @@ module "service-account" {
 
 module "instance" {
   source                   = "./modules/instance"
-  instance_name            = "${lower(var.project_name)}-managment-vm"
+  instance_name            = "${lower(var.project_name)}-management-vm"
   machine_type             = var.machine_type
   zone                     = "${module.cluster.cluster_zone}-b"
   boot_disk_image          = var.boot_disk_image
