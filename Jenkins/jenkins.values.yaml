@@ -275,6 +275,7 @@ controller:
   - sonar
   - sonar-quality-gates
   - docker-workflow
+  javaOpts: -Xmx1024m -Dhudson.slaves.NodeProvisioner.MARGIN=50 -Dhudson.slaves.NodeProvisioner.MARGIN0=0.85
   jenkinsHome: /var/jenkins_home
   jenkinsRef: /usr/share/jenkins/ref
   jenkinsUrl: http://localhost:8080/
@@ -326,7 +327,7 @@ controller:
   serviceExternalTrafficPolicy: null
   serviceLabels: {}
   servicePort: 8080
-  serviceType: ClusterIP
+  serviceType: LoadBalancer
   sidecars:
     configAutoReload:
       containerSecurityContext:
