@@ -41,6 +41,11 @@ metadata:
     app: python-app
 spec:
   replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
   selector:
     matchLabels:
       app: python-app
@@ -51,7 +56,7 @@ spec:
     spec:
       containers:
       - name: python-app
-        image: 10.103.37.81:5000/shepl/python_app:19-prod
+        image: 10.96.56.123:5000/shepl/python_app:17-prod
         imagePullPolicy: Always
         ports:
         - containerPort: 8000   
@@ -66,7 +71,7 @@ kind: Service
 metadata:
   name: app-svc
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
   - port: 8000
     targetPort: 8000
