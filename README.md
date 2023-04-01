@@ -47,7 +47,7 @@ gcloud compute ssh project-340821-management-vm --project project-340821 --zone 
 ```
 ansible-playbook --ask-become-pass Ansible.yaml
 ```
-![Ansible](./Screenshots/)
+![Ansible](./Screenshots/Ansible.png)
 
 - This Ansible playbook will perform several tasks :
     - Connect to the GKE cluster.
@@ -91,7 +91,7 @@ ansible-playbook --ask-become-pass Ansible.yaml
 - Also to make sure that we have enough storage for storing our images inside Nexus, I created a Persist volume claim attached with Persist volume with enough space to test the pipeline.
 - Now the Nexus registry is up and ready to push/pull images to it.
 
-![Nexus](./Screenshots/)
+![Nexus](./Screenshots/Nexus.png)
 
 # Setting up SonarQube
 
@@ -142,7 +142,7 @@ ansible-playbook --ask-become-pass Ansible.yaml
     - `Kubectl` - To be able to deploy inside my cluster, it will be a good idea to use a container to handle this thing. I see it as a good solution if you can't connect with your cluster by Jenkins.
     - `Docker` - For building & push the application image, we will need a Docker-cli connected with the docker demon. I tried to build the image from scratch to make sure that I use a lightweight agent.  
 
-- The stages consist of 6 stages, with a post-action for each stage to tell Slack if this stage is passed or failed. I tried to be very precise with each stage for making troubleshooting easier if a stage failed, by this way we can watch everything just from Slack. and finally, a post-action that tells if the build success or failed and the time used during the pipeline process.
+- The stages consist of 7 stages, with a post-action for each stage to tell Slack if this stage is passed or failed. I tried to be very precise with each stage for making troubleshooting easier if a stage failed, by this way we can watch everything just from Slack. and finally, a post-action that tells if the build success or failure and the time used during the pipeline process.
 
     - `Stage 1` - just to send a notification to Slack to tell that there is a new build started with a description of the job like the job name, number, description, and a button that lets u directly open the job page if you want to check it.
     
@@ -154,26 +154,48 @@ ansible-playbook --ask-become-pass Ansible.yaml
     ![Jenkins_stage_2-2](./Screenshots/Jenkins_stage_2-2.png)
     ![Jenkins_stage_2-3](./Screenshots/Jenkins_stage_2-3.png)
 
-    - `Stage 3` - Quality gates status, after the code analysis process is done, Jenkins must wait for the Quality gates to reply if the build is passed then Jenkins will continue the pipeline, if not passed then Jenkins will Stop the pipeline.
+    - `Stage 3` - Testing the Application, an automated test of some functions of the app to make sure that there are no bugs or errors.
 
     ![Jenkins_stage_3](./Screenshots/Jenkins_stage_3.png)
 
-    - `Stage 4` - Building and pushing the image to the Nexus repository after the quality gate marked the code as passed.
+    - `Stage 4` - Quality gates status, after the code analysis process is done, Jenkins must wait for the Quality gates to reply if the build is passed then Jenkins will continue the pipeline, if not passed then Jenkins will Stop the pipeline.
+
+    ![Jenkins_stage_4](./Screenshots/Jenkins_stage_4.png)
+
+    - `Stage 5` - Building and pushing the image to the Nexus repository after the quality gate marked the code as passed.
     
-    ![Jenkins_stage_4-1](./Screenshots/Jenkins_stage_4-1.png)
-    ![Jenkins_stage_4-2](./Screenshots/Jenkins_stage_4-2.png)
+    ![Jenkins_stage_5-1](./Screenshots/Jenkins_stage_5-1.png)
+    ![Jenkins_stage_5-2](./Screenshots/Jenkins_stage_5-2.png)
 
-    - `Stage 5` - Push the new tag to Git, once a new build is out, we must edit the Application deployment with the new image tag.
-
-    ![Jenkins_stage_5](./Screenshots/Jenkins_stage_5.png)
-
-    - `Stage 6` - Deploy the application manifests to the cluster. by the appropriate roles configured to the service account attached to Jenkins, it can deploy, check, and create any group of resources we want. in my case, I tried to create roles for Jenkins to be able to deploy custom CRDs not authorized to Jenkins by default like external secrets, vault, ingress, pv, pvc. sure these things must be set for the first time to the application by Cluster admin, not by Jenkins but I just wanted to provide the Jenkins service account power to do that also I loved to try how can I create a custom unique group of roles and if that can be accepted by Jenkins or not. however, it's a great thing if you have control over your cluster resources. 
+    - `Stage 6` - Push the new tag to Git, once a new build is out, we must edit the Application deployment with the new image tag.
 
     ![Jenkins_stage_6](./Screenshots/Jenkins_stage_6.png)
+
+    - `Stage 7` - Deploy the application manifests to the cluster. by the appropriate roles configured to the service account attached to Jenkins, it can deploy, check, and create any group of resources we want. in my case, I tried to create roles for Jenkins to be able to deploy custom CRDs not authorized to Jenkins by default like external secrets, vault, ingress, pv, pvc. sure these things must be set for the first time to the application by Cluster admin, not by Jenkins but I just wanted to provide the Jenkins service account power to do that also I loved to try how can I create a custom unique group of roles and if that can be accepted by Jenkins or not. however, it's a great thing if you have control over your cluster resources. 
+
+    ![Jenkins_stage_7](./Screenshots/Jenkins_stage_7.png)
     
 - After all the pipeline stages are finished, a post-action will send a msg to Slack with build success or failure. here are the full results from slack.
 
 ![Jenkins_slack](./Screenshots/Jenkins_slack.png)
+
+# The Application & Database
+
+- A simple python app that connects to Redis DB and stores its numerical values on it. so with each hit, it will generate a new number value and save it on the redis server.
+- The application uses several environment variables.
+They need to be available at runtime. Here is an overview of the environment variables:
+    - `ENVIRONMENT` the environment in which the application is run. Likely `PROD` for production or `DEV` for development context.
+    - `HOST` the hostname on which the application is running. Locally it is `localhost`.
+    - `PORT` is the port on which the application is running.
+    - `REDIS_HOST` is the hostname on which redis is running. Locally it is `localhost`.
+    - `REDIS_PORT` is the port on which to communicate with Redis. Normally it is `6379`.
+    - `REDIS_DB` which redis db should be used. Normally it is `0`.
+- These variables will be stored as secrets in the vault server so that once the application will be deployed the external secrets operator will create a secret have these variables for the app and will pull the variables from the vault server which stored into a custom path `secrets/appcred`.
+- The second secret is required for the application to be able to pull the image inside the container from nexus repository and it is also stored in the vault server under this path `secrets/regcred`.
+- The application has an Ingress object connected to the application internal service so it can be accessed by custom DNS name. this ingress has a certification, issuer as a secret reference for the certification connects to the Let's encrypt staging server so the certificate will generate a custom secret object issued by the let's encrypt issuer and then assign it to a custom DNS in my case it will be `python-app.devops.com`. then I can use it as a vailed certificate with ingress for my custom DNS.
+
+![App](./Screenshots/App.png)
+
 
 # Setting up Prometheus & Grafana
 
@@ -182,7 +204,7 @@ Because several configurations must be done for both Prometheus and Grafana, it 
     - Setting up Jenkins job for pulling metrics by Prometheus. Jenkins with Prometheus plugin can push its metrics to prometheus. this can be achieved by setting jenkins target & path so Prometheus can reach Jenkins correctly.
     - Setting up alert manager with some rules. this is an awesome feature if you want to set some alerts to specific targets with some conditions. in my case, I set an alert to check all the instances inside my cluster if any instance is down for 1m send a message describing the down target and some information about it also if this instance is back and up send back a message to inform me. an additional thing for letting Prometheus reach the alert manager to send these alerts once any condition is achieved. I had to configure Prometheus with the alert manager endpoint.
     - Setting up Slack notifications with Prometheus. to receive the above alerts, I set the alert manager to check these alerts. but if the cluster node is down, this not going to work. so I set up Prometheus with a slack webhook to be able to receive the alerts outside the cluster. the slack configuration will read the alert rules and send a notification whenever the condition is vailed for some instance.
-    - Setting up custom user and password for both Prometheus and grafana.
+    - Setting up custom user and password for both Prometheus and Grafana.
 - Now Prometheus and Grafana must be ready.
 
 ![Prometheus-grafana-deployment](./Screenshots/Prometheus-grafana-deployment.png)
