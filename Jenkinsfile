@@ -106,6 +106,31 @@ pipeline {
             }
         }
 
+        stage('Testing The Application') {
+            steps {
+                container('docker') {
+                    dir('App/tests/') {
+                        script {
+                            sh 'python3 test.py'
+                        }
+                    }
+                }
+            }
+
+            post {
+                success {
+                    slackSend color: 'good', message: """
+                    - :white_check_mark: Stage > '${env.STAGE_NAME.toUpperCase()}' < has completed successfully.
+                    """.stripIndent()
+                }
+                failure {
+                    slackSend color: 'danger', message: """
+                    - :exclamation: Stage > '${env.STAGE_NAME.toUpperCase()}' < has failed.
+                    """.stripIndent()
+                }
+            }
+        }
+
         stage('Building and Pushing Docker Image To Nexus') {
             steps {
                 container('docker') {
