@@ -27,6 +27,8 @@
         chart_folder: SonarQube/
         values_file: SonarQube/sonarqube.values.yaml
         namespace: sonarqube
+      - name: app
+        namespace: app
       - deployment: nexus
         nexus_manifest: Nexus/nexus.deployment.yaml
         namespace: nexus
