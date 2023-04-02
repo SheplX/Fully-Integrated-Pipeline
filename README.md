@@ -7,7 +7,7 @@ a complete cycle that can simulate a real environment on companies, a process th
 # Getting started
 
 - During the project, I used several tools that can handle each part and I would like to provide each tool with a little explanation :
-    - `Terraform` - for deploying the required infrastructure on Google Cloud Provider (GCP)
+    - `Terraform` - for deploying the required infrastructure on Google Cloud Provider (GCP).
     - `Docker` - for building the application image.
     - `Kubernetes` - for deploying the application & database manifests, and helm charts.
     - `Ansible` - for automating some tasks inside the cluster like creating the namespaces, deploying the helm charts on each namespace and configuring the Hashicorp Vault cluster.
@@ -52,7 +52,7 @@ ansible-playbook --ask-become-pass Ansible.yaml
 - This Ansible playbook will perform several tasks :
     - Connect to the GKE cluster.
     - Create several namespaces, each namespace will contain different deployments/helm charts.
-    - Deploy the helm charts of `Jenkins` `Vault` `External-Secrets` `Prometheus` `Grafana` `SonarQube` and the `Nexus` deployments.
+    - Deploy the helm charts of `Jenkins` `Vault` `External-Secrets` `Prometheus` `Grafana` `SonarQube` and the `Nexus` deployments in each created namespace.
     - Deploy the Jenkins roles into its namespace.
     - Initiate the hashicorp Vault cluster.
 
@@ -86,7 +86,7 @@ ansible-playbook --ask-become-pass Ansible.yaml
 - The second important thing is to set up the registry which will be used to store our application images which will be built by Jenkins, in this case, I tried to use Nexus to simulate security reasons related to the companies like they sometimes would prefer to store the images locally. Although you can create your private registries online with Docker hub or Github container registry it's still a better & preferred idea for most companies.
 - I tried to use Nexus helm charts from the official repo but I found some permission issues so I tried to create a deployment for the Nexus registry.
 - I set up 2 Containers
-    - Initial container with a busybox image for setting the appropriate ownership and permissions on the `/nexus-data` directory before the Nexus container starts running. it will change the ownership of the `/nexus-data` directory to the user with ID 200, which matches the UID of the non-root user that the Nexus container will run as. This ensures that the Nexus container will have the necessary permissions to read and write data in the `/nexus-data` directory ( this was a problem with the Nexus helm charts that's why I made a special deployment for it).
+    - Initial container with a busybox image for setting the appropriate ownership and permissions on the `/nexus-data` directory before the Nexus container starts running. it will change the ownership of the `/nexus-data` directory to the user with ID 200, which matches the UID of the non-root user that the Nexus container will run as. This ensures that the Nexus container will have the necessary permissions to read and write data in the `/nexus-data` directory ( this was a problem with the Nexus helm charts that's why I made a special deployment for it ).
     - Nexus contianer has the official Nexus image with 2 ports opened. the first is 8081 and it is the important port to be able to access the Nexus UI. 5000 which will be used to push the images by it.
 - Also to make sure that we have enough storage for storing our images inside Nexus, I created a Persist volume claim attached with Persist volume with enough space to test the pipeline.
 - Now the Nexus registry is up and ready to push/pull images to it.
@@ -242,7 +242,7 @@ Because several configurations must be done for both Prometheus and Grafana, it 
 
 ![Grafana_datasource](./Screenshots/Grafana_datasource.png)
 
-- In order to check Jenkins metrics, we need to add some dashboards which been configured with Jenkins metrics
+- In order to check Jenkins metrics, we need to add some dashboards which been configured with Jenkins metrics.
 
 ![Grafana_jenkins_metrics](./Screenshots/Grafana_jenkins_metrics.png)
 
