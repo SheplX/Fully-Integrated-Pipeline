@@ -11,7 +11,7 @@ a complete cycle that can simulate a real environment on companies, a process th
     - `Docker` - for building the application image.
     - `Kubernetes` - for deploying the application & database manifests, and helm charts.
     - `Ansible` - for automating some tasks inside the cluster like creating the namespaces, deploying the helm charts on each namespace and configuring the Hashicorp Vault cluster.
-    - `Helm` - for deploying some required helm charts like Jenkins, Hashicorp Vault, External-secrets, SonarQube, Prometheus, and Grafana, I tried to make my custom values for each Helm package.
+    - `Helm` - for deploying some required helm charts like `Jenkins` `Hashicorp Vault` `External-secrets` `SonarQube` `Prometheus` and `Grafana`. I tried to make my custom values for each Helm package.
     - `Prometheus` - as a data source for Grafana. to scrape the metrics from several configured targets.
     - `Grafana` - for visualization, watch each target metric.
     - `SonarQube` - for automatic code reviews, delivers a clean & safe code.
