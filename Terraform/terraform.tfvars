@@ -18,9 +18,9 @@ managed_cidr_block  = "10.0.1.0/24"
 initial_node_count  = 1
 cluster_node = {
   cluster_node_name      = "node"
-  node_count             = 3
-  disk_size              = 100
-  machine_type           = "e2-medium"
+  node_count             = 1
+  disk_size              = 260
+  machine_type           = "n2-highcpu-8"
   node_image             = "COS_CONTAINERD"
 }
 
