@@ -1,4 +1,4 @@
-variable "project" {
+variable "project_name" {
   type        = string
   description = "Name of the project in which the infrastructure will be deployed"
 }
