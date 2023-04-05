@@ -60,7 +60,7 @@
       when: item.nexus_manifest is defined
       loop: "{{ helm_charts }}"
 
-    - name: Deploying Jenkins Roles
+    - name: Deploying Jenkins Service Account & Roles
       command: kubectl apply -f {{ item.jenkins_role }} --namespace {{ item.namespace }} --kubeconfig={{ lookup('env', 'HOME') }}/.kube/config
       when: item.jenkins_role is defined
       loop: "{{ helm_charts }}"
