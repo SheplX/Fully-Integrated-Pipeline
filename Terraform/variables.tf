@@ -3,24 +3,29 @@ variable "project_name" {
   description = "Name of the project in which the infrastructure will be deployed"
 }
 
-variable "vpc_name" {
+variable "provider_region" {
   type        = string
-  description = "Name of the VPC that will be created"
+  description = "Provider region"
 }
 
-variable "managed_subnet_name" {
+variable "bucket_name" {
   type        = string
-  description = "Name of the managed subnet"
+  description = "Bucket region"
+}
+
+variable "bucket_location" {
+  type        = string
+  description = "Bucket location"
+}
+
+variable "bucket_prefix" {
+  type        = string
+  description = "Bucket prefix"
 }
 
 variable "managed_cidr_block" {
   type        = list(string)
   description = "IP address ranges for the managed subnet"
-}
-
-variable "restricted_subnet_name" {
-  type        = string
-  description = "Name of the restricted subnet"
 }
 
 variable "restricted_cidr_block" {
@@ -33,34 +38,9 @@ variable "subnets_region" {
   description = "Region in which the subnets will be deployed"
 }
 
-variable "router_name" {
-  type        = string
-  description = "Name of the router"
-}
-
-variable "nat_gateway_name" {
-  type        = string
-  description = "Name of the NAT gateway"
-}
-
-variable "firewall_name" {
-  type        = string
-  description = "Name of the firewall"
-}
-
-variable "service_account" {
-  type        = string
-  description = "Service account name"
-}
-
 variable "project_name" {
   type        = string
   description = "Name of the project"
-}
-
-variable "instance_name" {
-  type        = string
-  description = "Name of the instance"
 }
 
 variable "machine_type" {
@@ -111,11 +91,6 @@ variable "scopes" {
 variable "metadata_startup_script" {
   type        = string
   description = "Startup script for the instance metadata"
-}
-
-variable "cluster_name" {
-  type        = string
-  description = "Name of the Kubernetes cluster"
 }
 
 variable "cluster_zone" {
