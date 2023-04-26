@@ -1,4 +1,4 @@
-# Fully-Integrated-Pipeline-Project
+# Fully Integrated Pipeline Project
 Introducing a pipeline project integrating with several popular DevOps tools. I tried to make everything as automated, secure, reliable, and logical as possible.
 a complete cycle that can simulate a real environment on companies, a process that can produce good & secure software quality with good sights for each resource inside the infrastructure.
 
