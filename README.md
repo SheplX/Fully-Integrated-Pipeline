@@ -105,7 +105,7 @@ ansible-playbook --ask-become-pass Ansible.yaml
     - A sonar token is required to authenticate with Jenkins for scanning or quality gate cases.
 - Once Jenkins performs the scanning job, sonar will receive the scanning reports and analyze them.
 
-![Sonar_results]
+![Sonar_results](./Screenshots/Sonar_results.png)
 
 - And because the build is passed successfully, the quality gates step must reply to Jenkins with a success status to continue the pipeline steps.
 
