@@ -16,7 +16,7 @@ a complete cycle that can simulate a real environment on companies, a process th
     - `Grafana` - for visualization, watch each target metric.
     - `SonarQube` - for automatic code reviews, delivers a clean & safe code.
     - `Nexus` - to store the images privately inside the Cluster.
-    - `Hashicorp Vault` - as a free & great solution for storing secrets.
+    - `Hashicorp Vault` - a free & great solution for storing secrets.
     - `External-Secrets` - configured with Hashicorp Vault for managing the secrets inside each namespace.
     - `Jenkins` - as a CI/CD automation tool.
     - `Slack` - as a notifications channel configured with Prometheus & Jenkins.
@@ -30,12 +30,12 @@ a complete cycle that can simulate a real environment on companies, a process th
 - Building a VPC with 2 subnets, each subnet will have different sources.
 - The first subnet will be Management (Public) with these resources :
     - An instance that will be used to access the cluster control plane privately.
-    - This instance will be configured with a script to have preinstalled tools like ansible, kubectl, gcloud-cli, and helm.
-- The second subnet will be restricted (Private) and associated with a router, and nat gateway so the resources can access the internet without external IP. this subnet will have these resources :
+    - This instance will be configured with a script to have preinstalled tools like Ansible, kubectl, gcloud-cli, and Helm.
+- The second subnet will be restricted (Private) and associated with a router, and nat gateway so the resources can access the internet without external IP. This subnet will have these resources :
     - A private GKE cluster is configured with a private control plane to be accessed only from a CIDR range, this range will be the Management subnet range so the instance only can access the cluster control plane.
 - A service account is bound with a role to be able to create the cluster and also for the instance to be able to manage the cluster.
 - A firewall with IAP access to be able to SSH into the Management instance privately.
-- A google storage bucket for storing tfstate file of terraform and syncing any new changes has been made inside the infrastructure.
+- A Google storage bucket for storing tfstate file of terraform and syncing any new changes has been made inside the infrastructure.
 
 # Managing the cluster with Ansible
 
@@ -83,11 +83,11 @@ ansible-playbook --ask-become-pass Ansible.yaml
 
 # Setting up Nexus registry
 
-- The second important thing is to set up the registry which will be used to store our application images which will be built by Jenkins, in this case, I tried to use Nexus to simulate security reasons related to the companies like they sometimes would prefer to store the images locally. Although you can create your private registries online with Docker hub or Github container registry it's still a better & preferred idea for most companies.
+- The second important thing is to set up the registry which will be used to store our application images which will be built by Jenkins, in this case, I tried to use Nexus to simulate security reasons related to the companies like they sometimes would prefer to store the images locally. Although you can create your private registries online with Docker Hub or GitHub container registry it's still a better & preferred idea for most companies.
 - I tried to use Nexus helm charts from the official repo but I found some permission issues so I tried to create a deployment for the Nexus registry.
 - I set up 2 Containers
     - Initial container with a busybox image for setting the appropriate ownership and permissions on the `/nexus-data` directory before the Nexus container starts running. it will change the ownership of the `/nexus-data` directory to the user with ID 200, which matches the UID of the non-root user that the Nexus container will run as. This ensures that the Nexus container will have the necessary permissions to read and write data in the `/nexus-data` directory ( this was a problem with the Nexus helm charts that's why I made a special deployment for it ).
-    - Nexus contianer has the official Nexus image with 2 ports opened. the first is 8081 and it is the important port to be able to access the Nexus UI. 5000 which will be used to push the images by it.
+    - Nexus container has the official Nexus image with 2 ports opened. the first is 8081 and it is the important port to be able to access the Nexus UI. 5000 which will be used to push the images by it.
 - Also to make sure that we have enough storage for storing our images inside Nexus, I created a Persist volume claim attached with Persist volume with enough space to test the pipeline.
 - Now the Nexus registry is up and ready to push/pull images to it.
 
@@ -103,11 +103,11 @@ ansible-playbook --ask-become-pass Ansible.yaml
     - Set up a new project, with a name to be configured with the application code by the properties file. this will tell the scanner which project to push the analytics of the scanned code.
     - Qualitly gates must be configured with a webhook between sonar and Jenkins to be able to approve or deny according to the build results so Jenkins can continue the pipeline or stop it.
     - A sonar token is required to authenticate with Jenkins for scanning or quality gate cases.
-- Once Jenkins performs the scanning job, sonar will receive the scanning reports and analyze it.
+- Once Jenkins performs the scanning job, sonar will receive the scanning reports and analyze them.
 
-![Sonar_results](./Screenshots/Sonar_results.png)
+![Sonar_results]
 
-- And becase the build is passed successfully, the quality gates step must reply to Jenkins with a success statue to continue the pipeline steps.
+- And because the build is passed successfully, the quality gates step must reply to Jenkins with a success status to continue the pipeline steps.
 
 ![Sonar_quality_gates](./Screenshots/Sonar_quality_gates.png)
 
@@ -123,28 +123,28 @@ ansible-playbook --ask-become-pass Ansible.yaml
     - A sonar token is required to authenticate with Jenkins for scanning or quality gate cases.
 - Once Jenkins performs the scanning job, sonar will receive the scanning reports and analyze it.
 
-![Sonar_results](./Screenshots/Sonar_results.png)
+![Sonar_results]
 
-- And becase the build is passed successfully, the quality gates step must reply to Jenkins with a success statue to continue the pipeline steps.
+- and because the build is passed successfully, the quality gates step must reply to Jenkins with a success status to continue the pipeline steps.
 
 ![Sonar_quality_gates](./Screenshots/Sonar_quality_gates.png)
 
 # Setting up Jenkins
 
 - As the most popular CI/CD tool today, I loved to use Jenkins to manage the pipeline of the project. especially because Jenkins can use several useful plugins which can be helpful to automate some jobs. 
-- I used Jenkins Helm charts because I always like to customize Jenkins with my personal configurations, here is how my custom values file has been set :
+- I used Jenkins Helm charts because I always like to customize Jenkins with my configurations, here is how my custom values file has been set :
     - Setting Jenkins with some plugins to be preinstalled like :
         - `Kubernetes` - because I like to use different agents to perform Jenkins jobs.
         - `Configuration-as-code` - useful plugin to set up Jenkins configurations like global configurations, global system configuration or even any other installed plugins. I used it to set up Slack configurations, SonarQube plugin, Prometheus plugin, some unwanted security warnings, and some credentials.
         - `Prometheus` - I need Jenkins metrics to be pushed at a special path pattern, by installing this plugin I can find the Jenkins metrics at the path `/Prometheus`. this way I can set up Jenkins as a target for the Prometheus server to be able to scrape its metrics also every 5 secs the metrics will be pushed to the path.
         ![Jenkins_metrics](./Screenshots/Jenkins_metrics.png)
-        -  `Disk-usage` - in some cases this plugin must be available if we use Prometheus plugin, this will provide all the disk usage by Jenkins.
+        -  `Disk-usage` - in some cases, this plugin must be available if we use the Prometheus plugin, this will provide all the disk usage by Jenkins.
         ![Jenkins_disk_usage](./Screenshots/Jenkins_disk_usage.png)
         - `Blue-ocean` - a great customized UI for Jenkins, a good sight for the jobs, and check the logs better and more tidily.
-        - `Sonar` - iam using SonarQube on this project so Jenkins must integrate & authenticate with the sonar server to perform a security scan automatically with every build.
+        - `Sonar` - I am using SonarQube on this project so Jenkins must integrate & authenticate with the sonar server to perform a security scan automatically with every build.
         - `Sonar-Quality-gates` - after the SonarQube scan has been done, it will end with success or failure, using this plugin with webhook configured will help me to continue the pipeline process or to end it with failure. important because maybe the code has a higher percentage of security issues or the code is not clean enough and SonarQube marked this code as not accepted for building in this case it will be better to stop the pipeline and recheck the code.
         - `Docker-pipeline` - a better way to build the docker images inside Jenkins.
-        - `Slack` - I would like to receive notifications when there is a build started or for each stage failed or successful and at the end of the pipeline if the build is totally successful or failed, in this case, slack must be the best option available.
+        - `Slack` - I would like to receive notifications when there is a build started or for each stage failed or successful and at the end of the pipeline if the build is successful or failed, in this case, slack must be the best option available.
     - Set up a specific User and Password if inside the values or from a separate token.
     - Jenkins custom image, service type.
     - Persistent volume, persistent volume claim.
@@ -160,7 +160,7 @@ ansible-playbook --ask-become-pass Ansible.yaml
     - `Kubectl` - To be able to deploy inside my cluster, it will be a good idea to use a container to handle this thing. I see it as a good solution if you can't connect with your cluster by Jenkins.
     - `Docker` - For building & push the application image, we will need a Docker-cli connected with the docker demon. I tried to build the image from scratch to make sure that I use a lightweight agent.  
 
-- The stages consist of 7 stages, with a post-action for each stage to tell Slack if this stage is passed or failed. I tried to be very precise with each stage for making troubleshooting easier if a stage failed, by this way we can watch everything just from Slack. and finally, a post-action that tells if the build success or failure and the time used during the pipeline process.
+- The stages consist of 7 stages, with a post-action for each stage to tell Slack if this stage is passed or failed. I tried to be very precise with each stage for making troubleshooting easier if a stage failed, by this way, we can watch everything just from Slack. and finally, a post-action that tells if the build success or failure and the time used during the pipeline process.
 
     - `Stage 1` - just to send a notification to Slack to tell that there is a new build started with a description of the job like the job name, number, description, and a button that lets u directly open the job page if you want to check it.
     
@@ -193,24 +193,24 @@ ansible-playbook --ask-become-pass Ansible.yaml
 
     ![Jenkins_stage_7](./Screenshots/Jenkins_stage_7.png)
     
-- After all the pipeline stages are finished, a post-action will send a msg to Slack with build success or failure. here are the full results from slack.
+- After all the pipeline stages are finished, a post-action will send a msg to Slack with build success or failure. here are the full results from Slack.
 
 ![Jenkins_slack](./Screenshots/Jenkins_slack.png)
 
 # The Application & Database
 
-- A simple python app that connects to Redis DB and stores its numerical values on it. so with each hit, it will generate a new number value and save it on the redis server.
+- A simple Python app that connects to Redis DB and stores its numerical values on it. so with each hit, it will generate a new number value and save it on the Redis server.
 - The application uses several environment variables.
 They need to be available at runtime. Here is an overview of the environment variables:
-    - `ENVIRONMENT` the environment in which the application is run. Likely `PROD` for production or `DEV` for development context.
+    - `ENVIRONMENT` is the environment in which the application is run. Likely `PROD` for production or - - `DEV` for development context.
     - `HOST` the hostname on which the application is running. Locally it is `localhost`.
     - `PORT` is the port on which the application is running.
-    - `REDIS_HOST` is the hostname on which redis is running. Locally it is `localhost`.
+    - `REDIS_HOST` is the hostname on which Redis is running. Locally it is `localhost`.
     - `REDIS_PORT` is the port on which to communicate with Redis. Normally it is `6379`.
     - `REDIS_DB` which redis db should be used. Normally it is `0`.
-- These variables will be stored as secrets in the vault server so that once the application will be deployed the external secrets operator will create a secret have these variables for the app and will pull the variables from the vault server which stored into a custom path `secrets/appcred`.
-- The second secret is required for the application to be able to pull the image inside the container from nexus repository and it is also stored in the vault server under this path `secrets/regcred`.
-- The application has an Ingress object connected to the application internal service so it can be accessed by custom DNS name. this ingress has a certification, issuer as a secret reference for the certification connects to the Let's encrypt staging server so the certificate will generate a custom secret object issued by the let's encrypt issuer and then assign it to a custom DNS in my case it will be `python-app.devops.com`. then I can use it as a vailed certificate with ingress for my custom DNS.
+- These variables will be stored as secrets in the vault server so that once the application will be deployed the external secrets operator will create a secret have these variables for the app and will pull the variables from the vault server which is stored into a custom path `secrets/appcred`.
+- The second secret is required for the application to be able to pull the image inside the container from the Nexus repository and it is also stored in the vault server under this path `secrets/regcred`.
+- The application has an Ingress object connected to the application's internal service so it can be accessed by custom DNS name. this ingress has a certification, issuer as a secret reference for the certification connects to the Let's Encrypt staging server so the certificate will generate a custom secret object issued by the Let's Encrypt issuer and then assign it to a custom DNS in my case it will be `python-app.devops.com`. then I can use it as a vailed certificate with ingress for my custom DNS.
 
 ![App](./Screenshots/App.png)
 
@@ -219,15 +219,15 @@ They need to be available at runtime. Here is an overview of the environment var
 
 - For several cases, it's very important to watch what's happening to your cluster or your application or even some targets you want to check its metrics. to achieve this, tools such as Prometheus and Grafana provide enormous help for good care of your resources.
 Because several configurations must be done for both Prometheus and Grafana, it would be a nice idea to use helm packages for each tool configured with custom values. here are my custom configurations.
-    - Setting up Jenkins job for pulling metrics by Prometheus. Jenkins with Prometheus plugin can push its metrics to prometheus. this can be achieved by setting jenkins target & path so Prometheus can reach Jenkins correctly.
+    - Setting up Jenkins job for pulling metrics by Prometheus. Jenkins with Prometheus plugin can push its metrics to Prometheus. this can be achieved by setting Jenkins target & path so Prometheus can reach Jenkins correctly.
     - Setting up alert manager with some rules. this is an awesome feature if you want to set some alerts to specific targets with some conditions. in my case, I set an alert to check all the instances inside my cluster if any instance is down for 1m send a message describing the down target and some information about it also if this instance is back and up send back a message to inform me. an additional thing for letting Prometheus reach the alert manager to send these alerts once any condition is achieved. I had to configure Prometheus with the alert manager endpoint.
-    - Setting up Slack notifications with Prometheus. to receive the above alerts, I set the alert manager to check these alerts. but if the cluster node is down, this not going to work. so I set up Prometheus with a slack webhook to be able to receive the alerts outside the cluster. the slack configuration will read the alert rules and send a notification whenever the condition is vailed for some instance.
+    - Setting up Slack notifications with Prometheus. To receive the above alerts, I set the alert manager to check these alerts. but if the cluster node is down, this not going to work. so I set up Prometheus with a Slack webhook to be able to receive the alerts outside the cluster. the slack configuration will read the alert rules and send a notification whenever the condition is vailed for some instance.
     - Setting up custom user and password for both Prometheus and Grafana.
 - Now Prometheus and Grafana must be ready.
 
 ![Prometheus-grafana-deployment](./Screenshots/Prometheus-grafana-deployment.png)
 
-- After both charts are up and ready if we take a look at Prometheus UI, we can see that Jenkins metrics are available and we can create some dashboards to it using grafana. sure there are more metrics are configured by default on Prometheus charts for the cluster, nodes, deployments, pods, services, and much more.
+- After both charts are up and ready if we take a look at Prometheus UI, we can see that Jenkins metrics are available and we can create some dashboards to it using Grafana. sure there are more metrics configured by default on Prometheus charts for the cluster, nodes, deployments, pods, services, and much more.
 
 ![Prometheus_jenkins_metrics](./Screenshots/Prometheus_jenkins_metrics.png)
 
@@ -235,7 +235,7 @@ Because several configurations must be done for both Prometheus and Grafana, it 
 
 ![Prometheus_rules](./Screenshots/Prometheus_rules.png)
 
-- Prometheus targets which will be monitored by the rules and conditions, as you see all instances are up. we can see Jenkins's job between them too.
+- Prometheus targets will be monitored by the rules and conditions, as you see all instances are up. we can see Jenkins's job between them too.
 
 ![Prometheus_targets](./Screenshots/Prometheus_targets.png)
 
@@ -244,7 +244,7 @@ Because several configurations must be done for both Prometheus and Grafana, it 
 ![Prometheus_jenkins_target](./Screenshots/Prometheus_jenkins_target.png)
 ![Promethes_jenkins_alert](./Screenshots/Promethes_jenkins_alert.png)
 
-- If we take alook from the Alert manager UI, we will see a notification about the Jenkins instance too.
+- If we take a look from the Alert Manager UI, we will see a notification about the Jenkins instance too.
 
 ![Alert-manager](./Screenshots/Alert-manager.png)
 
@@ -268,7 +268,7 @@ Because several configurations must be done for both Prometheus and Grafana, it 
 
 ![Grafana_cluster_metrics](./Screenshots/Grafana_cluster_metrics.png)
 
-- Let's try to create custom dashboards, for example, I want to check pod metrics for my python application if it's up and running or not. I will select pod metrics that have a ready status and create a new query. we will find the pod is up and running.
+- Let's try to create custom dashboards, for example, I want to check pod metrics for my Python application if it's up and running or not. I will select pod metrics that have a ready status and create a new query. we will find the pod is up and running.
 
 ![Grafana_application_pod](./Screenshots/Grafana_application_pod.png)
 ![Grafana_application_pod-2](./Screenshots/Grafana_application_pod-2.png)
