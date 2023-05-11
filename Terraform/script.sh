@@ -11,6 +11,9 @@ sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 #to install Ansible
 sudo apt-get install -y ansible
 
+#to install jq
+sudo apt install -y jq
+
 #to install gcloud 
 sudo apt install -y apt-transport-https ca-certificates gnupg
 echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
