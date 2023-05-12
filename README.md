@@ -154,14 +154,14 @@ ansible-playbook --ask-become-pass Ansible.yaml
     ![Jenkins_stage_2-2](./Screenshots/Jenkins_stage_2-2.png)
     ![Jenkins_stage_2-3](./Screenshots/Jenkins_stage_2-3.png)
 
-    - `Stage 3` - Testing the Application, an automated test of some functions of the app to make sure that there are no bugs or errors.
-
-    ![Jenkins_stage_3](./Screenshots/Jenkins_stage_3.png)
-
-    - `Stage 4` - Quality gates status, after the code analysis process is done, Jenkins must wait for the Quality gates to reply if the build is passed then Jenkins will continue the pipeline, if not passed then Jenkins will Stop the pipeline.
+    - `Stage 3` - Quality gates status, after the code analysis process is done, Jenkins must wait for the Quality gates to reply if the build is passed then Jenkins will continue the pipeline, if not passed then Jenkins will Stop the pipeline.
 
     ![Jenkins_stage_4](./Screenshots/Jenkins_stage_4.png)
 
+    - `Stage 4` - Testing the Application, an automated test of some functions of the app to make sure that there are no bugs or errors.
+
+    ![Jenkins_stage_3](./Screenshots/Jenkins_stage_3.png)
+    
     - `Stage 5` - Building and pushing the image to the Nexus repository after the quality gate marked the code as passed.
     
     ![Jenkins_stage_5-1](./Screenshots/Jenkins_stage_5-1.png)
