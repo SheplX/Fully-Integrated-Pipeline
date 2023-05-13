@@ -41,7 +41,7 @@ a complete cycle that can simulate a real environment on companies, a process th
 
 - After the resources have been deployed by Terraform, it would be necessary to configure the cluster using Ansible, for that I need first to ssh into the management instance to be able to communicate with the cluster.
 ```
-gcloud compute ssh project-340821-management-vm --project project-340821 --zone europe-west1 --tunnel-through-iap
+gcloud compute ssh gke-pipeline-management-vm --project gke-pipeline --zone europe-west1 --tunnel-through-iap
 ```
 - Now i can implement the Ansible playbook.
 ```
